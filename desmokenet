@@ -1,0 +1,433 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/abhiram050904/abhiram-s-portfolio/blob/main/desmokenet\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "TVIEFU2diUQP"
+      },
+      "outputs": [],
+      "source": [
+        "import tensorflow as tf\n",
+        "import numpy as np\n",
+        "import cv2\n",
+        "import matplotlib.pyplot as plt\n",
+        "from tensorflow import keras\n",
+        "from keras.layers import Conv2D\n",
+        "from numpy import load\n",
+        "from numpy import zeros\n",
+        "from numpy import ones\n",
+        "from numpy.random import randint\n",
+        "from keras.optimizers import Adam, Adadelta,RMSprop\n",
+        "from keras.initializers import RandomNormal\n",
+        "from keras.models import Model\n",
+        "from keras.losses import mae\n",
+        "from keras.layers import Input, Flatten, Dense, Subtract, Multiply, Add\n",
+        "from keras.layers import Conv2DTranspose\n",
+        "from keras.layers import LeakyReLU\n",
+        "from keras.layers import Activation\n",
+        "from keras.layers import Concatenate\n",
+        "from keras.layers import Dropout\n",
+        "from keras.layers import BatchNormalization, AveragePooling2D\n",
+        "from keras.layers import LeakyReLU\n",
+        "from keras.layers import ZeroPadding2D\n",
+        "import os\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import re\n",
+        "from PIL import Image\n",
+        "a=256\n",
+        "\n",
+        "def sorted_alphanumeric(data):\n",
+        "    convert = lambda text: int(text) if text.isdigit() else text.lower()\n",
+        "    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]\n",
+        "    return sorted(data, key=alphanum_key)\n",
+        "\n",
+        "def load_images(path):\n",
+        "    src_list = list()\n",
+        "    print(path)\n",
+        "    x=''.join((path,'/'))\n",
+        "    print(x)\n",
+        "    for filename in  sorted_alphanumeric(os.listdir(path)):\n",
+        "        print(filename)\n",
+        "        pixels = Image.open(x+filename)\n",
+        "        pixels = tf.image.resize(pixels, [a, a])\n",
+        "        src_list.append(pixels)\n",
+        "\n",
+        "    return (src_list)\n",
+        "clear=''\n",
+        "hazy=''\n",
+        "clear1= load_images(clear)\n",
+        "hazy1=load_images(hazy)\n",
+        "\n",
+        "hazy1=np.array(hazy1,dtype='float32')\n",
+        "clear1=np.array(clear1,dtype='float32')\n",
+        "\n",
+        "print(hazy1[0].shape)\n",
+        "hazy1=(hazy1 - 127.5)/127.5\n",
+        "clear1=(clear1 - 127.5)/127.5\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 388
+        },
+        "id": "vL65ToPTiW0m",
+        "outputId": "a9a2cfdc-7d63-4a0b-cb44-16f54883713f"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "/\n"
+          ]
+        },
+        {
+          "output_type": "error",
+          "ename": "FileNotFoundError",
+          "evalue": "[Errno 2] No such file or directory: ''",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mFileNotFoundError\u001b[0m                         Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-9-07e16d84ae72>\u001b[0m in \u001b[0;36m<cell line: 24>\u001b[0;34m()\u001b[0m\n\u001b[1;32m     22\u001b[0m \u001b[0mclear\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m''\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     23\u001b[0m \u001b[0mhazy\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m''\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 24\u001b[0;31m \u001b[0mclear1\u001b[0m\u001b[0;34m=\u001b[0m \u001b[0mload_images\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mclear\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     25\u001b[0m \u001b[0mhazy1\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mload_images\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mhazy\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     26\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m<ipython-input-9-07e16d84ae72>\u001b[0m in \u001b[0;36mload_images\u001b[0;34m(path)\u001b[0m\n\u001b[1;32m     13\u001b[0m     \u001b[0mx\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m''\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mjoin\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mpath\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m'/'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     14\u001b[0m     \u001b[0mprint\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 15\u001b[0;31m     \u001b[0;32mfor\u001b[0m \u001b[0mfilename\u001b[0m \u001b[0;32min\u001b[0m  \u001b[0msorted_alphanumeric\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mos\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mlistdir\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mpath\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     16\u001b[0m         \u001b[0mprint\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mfilename\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     17\u001b[0m         \u001b[0mpixels\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mImage\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mopen\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx\u001b[0m\u001b[0;34m+\u001b[0m\u001b[0mfilename\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mFileNotFoundError\u001b[0m: [Errno 2] No such file or directory: ''"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def conv_block(layer_in):\n",
+        "  init=RandomNormal(stddev=0.02)\n",
+        "  g=Conv2D(32,(3,3),strides=(2,2),padding='same',kernel_initializer=init)(layer_in)\n",
+        "  g=LeakyReLU(alpha=0.2)(g)\n",
+        "  g=Conv2D(64,(3,3),strides=(1,1),padding='same',kernel_initializer=init)(g)\n",
+        "  g=LeakyReLU(alpha=0.2)(g)\n",
+        "  g=BatchNormalization()(g)\n",
+        "  g=Conv2D(128,(3,3),strides=(1,1),padding='same',kernel_initializer=init)(g)\n",
+        "  g=LeakyReLU(alpha=0.2)(g)\n",
+        "  return g\n",
+        "\n",
+        "def residual_block(layer_in):\n",
+        "  init=RandomNormal(stddev=0.02)\n",
+        "  _,_,_,c=layer_in.shape\n",
+        "  g=Conv2D(32,(3,3),strides=(1,1),padding='same',kernel_initializer=init)(layer_in)\n",
+        "  g=LeakyReLU(alpha=0.2)(g)\n",
+        "  g=Conv2D(64,(3,3),strides=(1,1),padding='same',kernel_initializer=init)(g)\n",
+        "  g=LeakyReLU(alpha=0.2)(g)\n",
+        "  g=BatchNormalization()(g)\n",
+        "  g=Conv2D(c,(3,3),strides=(1,1),padding='same',kernel_initializer=init)(g)\n",
+        "  g=tf.add(layer_in,g)\n",
+        "  g=LeakyReLU(alpha=0.2)(g)\n",
+        "  return g"
+      ],
+      "metadata": {
+        "id": "RXnTLI82jGmc"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "a=tf.constant([[1,2],[3,4]])\n",
+        "b=tf.constant([[1,2,3],[4,5,6],[7,8,9]])\n",
+        "diff=tf.shape(b)-tf.shape(a)\n",
+        "print(diff)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "wn0E5Gp5jLwG",
+        "outputId": "441fb640-c640-45b8-ee11-5aace0b4a40e"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "tf.Tensor([1 1], shape=(2,), dtype=int32)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def pad_up_to(t, max_in_dims):\n",
+        "    diff = max_in_dims - tf.shape(t)\n",
+        "    #print(tf.shape(t))\n",
+        "    paddings = [[0,0],[diff[1]/2,(diff[1]+1)/2],[diff[2]/2,(diff[2]+1)/2],[0,0]]\n",
+        "    return tf.pad(t, paddings,mode='CONSTANT')\n"
+      ],
+      "metadata": {
+        "id": "cB-5SUj7jMaR"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def desmoke_net(image_shape):\n",
+        "  init=RandomNormal(stddev=0.02)\n",
+        "  img=Input(shape=image_shape)\n",
+        "  # Defining the smoke estimation network\n",
+        "  #sme1 - sme5: Encoder Blocks\n",
+        "  #sme6 - sme10: Decoder blocks\n",
+        "  print('Check0')\n",
+        "  sme1=Conv2D(32, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(img)\n",
+        "  sme1=LeakyReLU(alpha=0.2)(sme1)\n",
+        "  sme2=Conv2D(64, (4,4), strides=(1,1), padding='same', kernel_initializer=init)(sme1)\n",
+        "  sme2=LeakyReLU(alpha=0.2)(sme2)\n",
+        "  sme3=Conv2D(128, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(sme2)\n",
+        "  sme3=LeakyReLU(alpha=0.2)(sme3)\n",
+        "  sme4=Conv2D(256, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(sme3)\n",
+        "  sme4=LeakyReLU(alpha=0.2)(sme4)\n",
+        "  sme5=Conv2D(512, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(sme4)\n",
+        "  sme5=LeakyReLU(alpha=0.2)(sme5)\n",
+        "  b = Conv2D(512, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(sme5)\n",
+        "  b = Activation('relu')(b)\n",
+        "  sme6=Conv2DTranspose(512, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(b)\n",
+        "  sme6=Concatenate()([sme6,sme5])\n",
+        "  sme6=Activation('relu')(sme6)\n",
+        "  sme7=Conv2DTranspose(256, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(sme6)\n",
+        "  sme7=Concatenate()([sme7,sme4])\n",
+        "  sme7=Activation('relu')(sme7)\n",
+        "  sme8=Conv2DTranspose(128, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(sme7)\n",
+        "  sme8=Concatenate()([sme8,sme3])\n",
+        "  sme8=Activation('relu')(sme8)\n",
+        "  sme9=Conv2DTranspose(64, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(sme8)\n",
+        "  sme9=Concatenate()([sme9,sme2])\n",
+        "  sme9=Activation('relu')(sme9)\n",
+        "  sme10=Conv2DTranspose(32, (4,4), strides=(1,1), padding='same', kernel_initializer=init)(sme9)\n",
+        "  sme10=Concatenate()([sme10,sme1])\n",
+        "  sme10=Activation('relu')(sme10)\n",
+        "\n",
+        "  g = Conv2DTranspose(3, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(sme10)\n",
+        "  out_image = Activation('sigmoid')(g)\n",
+        "  threshold=tf.math.reduce_mean(g)\n",
+        "  gsm=tf.where(g>threshold,1.0,0.0)\n",
+        "  print('Check2')\n",
+        "\n",
+        "  # RMS modules\n",
+        "\n",
+        "  #RMS3\n",
+        "  img3=tf.image.resize(img,[64,64])\n",
+        "  rms31=conv_block(img3)\n",
+        "  rms32=conv_block(rms31)\n",
+        "  rms33=residual_block(rms32)\n",
+        "  rms34=residual_block(rms33)\n",
+        "  rms35=residual_block(rms34)\n",
+        "  rms36=conv_block(rms35)\n",
+        "\n",
+        "  #RMS2\n",
+        "  img2=tf.image.resize(img,[128,128])\n",
+        "  rms21=conv_block(img2)\n",
+        "  rms22=conv_block(rms21)\n",
+        "  rms23=residual_block(rms22)\n",
+        "  rms24=residual_block(rms23)\n",
+        "  rms25=residual_block(rms24)\n",
+        "  rms26=conv_block(rms25)\n",
+        "\n",
+        "  #RMS1\n",
+        "  rms11=conv_block(img)\n",
+        "  rms12=conv_block(rms11)\n",
+        "  rms26_padded=pad_up_to(rms26,tf.shape(rms12))\n",
+        "  rms12=Concatenate()([rms12,rms26_padded])\n",
+        "  rms13=residual_block(rms12)\n",
+        "  rms14=residual_block(rms13)\n",
+        "\n",
+        "  rms36_padded=pad_up_to(rms36, tf.shape(rms14))\n",
+        "  rms14_a=Concatenate()([rms14,rms36_padded])\n",
+        "  rms14=Concatenate()([rms14,rms14_a])\n",
+        "  rms15=residual_block(rms14)\n",
+        "  rms16=conv_block(rms15)\n",
+        "  print('check6')\n",
+        "  #Enhancer\n",
+        "  rms16_padded=pad_up_to(rms16,tf.shape(img))\n",
+        "  out_rms=Concatenate()([img,rms16_padded])\n",
+        "\n",
+        "  out_rms1=AveragePooling2D(4,strides=4,padding='valid')(out_rms)\n",
+        "  out_rms2=AveragePooling2D(8,strides=8,padding='valid')(out_rms)\n",
+        "  out_rms3=AveragePooling2D(16,strides=16,padding='valid')(out_rms)\n",
+        "  out_rms4=AveragePooling2D(32,strides=32,padding='valid')(out_rms)\n",
+        "  e1=Conv2D(1,(1,1),kernel_initializer=init)(out_rms1)\n",
+        "  e2=Conv2D(1,(1,1),kernel_initializer=init)(out_rms2)\n",
+        "  e3=Conv2D(1,(1,1),kernel_initializer=init)(out_rms3)\n",
+        "  e4=Conv2D(1,(1,1),kernel_initializer=init)(out_rms4)\n",
+        "  print('check7')\n",
+        "  e1=pad_up_to(e1,tf.shape(img))\n",
+        "  e2=pad_up_to(e2,tf.shape(img))\n",
+        "  e3=pad_up_to(e3,tf.shape(img))\n",
+        "  e4=pad_up_to(e4,tf.shape(img))\n",
+        "  e_out=Concatenate()([out_rms,e1,e2,e3,e4])\n",
+        "  u_ = Conv2DTranspose(3, (4,4), strides=(1,1), padding='same', kernel_initializer=init)(e_out)\n",
+        "  print('Check8')\n",
+        "  #Coarse Output retrieval\n",
+        "\n",
+        "  m=Multiply()([u_,gsm])\n",
+        "  print('Check9')\n",
+        "  gsmc=1-gsm\n",
+        "  imgc=Multiply()([img,gsmc])\n",
+        "  print('Check10')\n",
+        "  coarse_u=Add()([m,imgc])\n",
+        "\n",
+        "  #Pixel Compensation network\n",
+        "\n",
+        "  k = tf.Variable(initial_value=0.5, dtype=tf.float32)\n",
+        "  condition = tf.greater(out_image, k)\n",
+        "  true_value = tf.ones_like(out_image)\n",
+        "  false_value = tf.zeros_like(out_image)\n",
+        "  mthick = tf.where(condition, true_value, false_value)\n",
+        "  print('check11')\n",
+        "  px1 = Conv2D(32, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(img)\n",
+        "  px1 = LeakyReLU(alpha=0.2)(px1)\n",
+        "  px2 = Conv2D(64, (4,4), strides=(1,1), padding='same', kernel_initializer=init)(px1)\n",
+        "  px2 = LeakyReLU(alpha=0.2)(px2)\n",
+        "  px3 = Conv2D(128, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(px2)\n",
+        "  px3 = LeakyReLU(alpha=0.2)(px3)\n",
+        "  px4 = Conv2D(256, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(px3)\n",
+        "  px4 = LeakyReLU(alpha=0.2)(px4)\n",
+        "  b = Conv2D(256, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(px4)\n",
+        "  b = Activation('relu')(b)\n",
+        "  px7 = Conv2DTranspose(256, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(b)\n",
+        "  px7 = Concatenate()([px7,px4])\n",
+        "  px7 = Activation('relu')(px7)\n",
+        "  px8 = Conv2DTranspose(128, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(px7)\n",
+        "  px8 = Concatenate()([px8,px3])\n",
+        "  px8 = Activation('relu')(px8)\n",
+        "  px9 = Conv2DTranspose(64, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(px8)\n",
+        "  px9 = Concatenate()([px9,px2])\n",
+        "  px9 = Activation('relu')(px9)\n",
+        "  px10 = Conv2DTranspose(32, (4,4), strides=(1,1), padding='same', kernel_initializer=init)(px9)\n",
+        "  px10 = Concatenate()([px10,px1])\n",
+        "  px10 = Activation('relu')(px10)\n",
+        "  pxg = Conv2DTranspose(3, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(px10)\n",
+        "  h = Activation('sigmoid')(pxg)\n",
+        "  print('Check12')\n",
+        "  ans1=Multiply()([mthick,h])\n",
+        "  ans=Add()([coarse_u,ans1])\n",
+        "  model=Model(img,ans,name='DesmokeNet')\n",
+        "  return model\n"
+      ],
+      "metadata": {
+        "id": "tK5oiSWejOc0"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#Initializing a model\n",
+        "mod=desmoke_net((256,256,3))\n",
+        "\n",
+        "#Compile the model, you can look online on how to give more arguements\n",
+        "mod.compile(optimizer='Adam',loss='mse')\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "_VH-W49LjS23",
+        "outputId": "03d4be92-4e28-4096-83e9-72024316c0b8"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Check0\n",
+            "Check2\n",
+            "check6\n",
+            "check7\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "WARNING:tensorflow:The following Variables were used in a Lambda layer's call (tf.math.greater_2), but are not present in its tracked objects:   <tf.Variable 'Variable:0' shape=() dtype=float32>. This is a strong indication that the Lambda layer should be rewritten as a subclassed Layer.\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Check8\n",
+            "Check9\n",
+            "Check10\n",
+            "check11\n",
+            "Check12\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#Fit function to train the model, insert data here. See online how to give arguements\n",
+        "mod.fit(x=train_data, y=train_labels, epochs=10, batch_size=32, validation_data=(val_data, val_labels))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 166
+        },
+        "id": "7TLtaKiqjVtF",
+        "outputId": "80e505ba-69d1-4d70-9844-629f66d067ee"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "NameError",
+          "evalue": "name 'train_data' is not defined",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-11-331fa1893dc6>\u001b[0m in \u001b[0;36m<cell line: 2>\u001b[0;34m()\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0;31m#Fit function to train the model, insert data here. See online how to give arguements\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 2\u001b[0;31m \u001b[0mmod\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mtrain_data\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mtrain_labels\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mepochs\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;36m10\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mbatch_size\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;36m32\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mvalidation_data\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mval_data\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mval_labels\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m: name 'train_data' is not defined"
+          ]
+        }
+      ]
+    }
+  ]
+}
